@@ -3,9 +3,9 @@
 
 cmake_minimum_required (VERSION 2.6)
 
-project (ai_set_motor)
+project (mm32_project_demo)
 
-set(MY_TARGET ai_set_motor)
+set(MY_TARGET mm32_project_demo)
 
 
 
