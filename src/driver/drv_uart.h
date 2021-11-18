@@ -17,9 +17,10 @@ void uart_ringbuf_init(void);
 void drv_uart1_init(uint32_t baud_rate);
 void drv_uart2_init(uint32_t baud_rate);
 void drv_uart_write_byte(UART_TypeDef* uart, uint8_t inputData);
-void send_string(UART_TypeDef* uart, uint8_t *str, uint8_t len);
+void uart_send_bytes(UART_TypeDef* uart, uint8_t *bytes, uint8_t len);
 void drv_uart_printf(UART_TypeDef* uart, char *fmt,...);
+void log_uart_printf(UART_TypeDef* uart, char *fmt,...);
 
-RING_BUF_DEF_STRUCT s_tx_ring_buf;
+RING_BUF_DEF_STRUCT s_rx_ring_buf;
 
 #endif

@@ -9,11 +9,11 @@
 #define DATA_TX_BUFSIZE      64
 #define DATA_RX_BUFSIZE      64
 
-RING_BUF_DEF_STRUCT s_tx_ring_buf;
+static RING_BUF_DEF_STRUCT s_tx_ring_buf;
 volatile uint8_t txcount = 0; 
 static uint8_t s_link_tx_buf[DATA_TX_BUFSIZE];
 
-static RING_BUF_DEF_STRUCT s_rx_ring_buf;
+RING_BUF_DEF_STRUCT s_rx_ring_buf;
 static uint8_t s_link_rx_buf[DATA_RX_BUFSIZE];
 
 void uart_ringbuf_init(void)
@@ -53,6 +53,10 @@ void drv_uart1_init(uint32_t baud_rate)
     UART_Init(UART1, &UART_InitStructure); //initial uart 1
     UART_ITConfig(UART1, UART_IT_TXIEN | UART_IT_RXIEN | UART_OVER_ERR, ENABLE);
     UART_Cmd(UART1, ENABLE);               //enable uart 1
+
+    /* Enable Half duplex*/
+    UART_HalfDuplexCmd(UART1, ENABLE);
+    // UART_HalfDuplexCmd(UART1, DISABLE);
 
     /* GPIO initial set */
     //UART1_TX   GPIOB.3
@@ -98,7 +102,7 @@ void drv_uart2_init(uint32_t baud_rate)
     UART_InitStructure.UART_Mode = UART_Mode_Rx | UART_Mode_Tx;                      //receive and sent mode
 
     UART_Init(UART2, &UART_InitStructure); //initial uart 2
-    UART_ITConfig(UART2, UART_IT_TXIEN | UART_IT_RXIEN | UART_OVER_ERR, ENABLE);
+    // UART_ITConfig(UART2, UART_IT_TXIEN | UART_IT_RXIEN | UART_OVER_ERR, ENABLE);
     UART_Cmd(UART2, ENABLE);               //enable uart 2
 
     /* GPIO initial set */
@@ -115,26 +119,44 @@ void drv_uart2_init(uint32_t baud_rate)
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 }
 
-
 void drv_uart_write_byte(UART_TypeDef* uart, uint8_t inputData)
 {
     UART_SendData(uart, inputData & (u16)0x00FF);
     while(!UART_GetFlagStatus(uart, UART_FLAG_TXEPT));
 }
 
-void send_string(UART_TypeDef* uart, uint8_t *str, uint8_t len)
+void uart_send_bytes(UART_TypeDef* uart, uint8_t *bytes, uint8_t len)
 {
-    drv_ringbuf_write(&s_tx_ring_buf, str, len);
+    drv_ringbuf_write(&s_tx_ring_buf, bytes, len);
     UART_ITConfig(uart, UART_IT_TXIEN, ENABLE);
 }
 
 void drv_uart_printf(UART_TypeDef* uart, char *fmt,...)
 {
     va_list ap;
-    char string[128]; 
+    char string[64]; 
     va_start(ap,fmt);
     vsprintf(string,fmt,ap);
-    send_string(uart, (uint8_t*)string, strlen(string));
+    uart_send_bytes(uart, (uint8_t*)string, strlen(string));
+    va_end(ap);
+}
+
+void send_log(UART_TypeDef* uart, char *str)
+{
+    while(*str)
+    {
+        drv_uart_write_byte(uart, *str++);
+    }
+}
+
+void log_uart_printf(UART_TypeDef* uart, char *fmt,...)
+{
+    va_list ap;
+    char string[64];
+    UART_ITConfig(uart, UART_IT_TXIEN, DISABLE);
+    va_start(ap,fmt);
+    vsprintf(string,fmt,ap);
+    send_log(uart, string);
     va_end(ap);
 }
 
@@ -145,7 +167,6 @@ void UART1_IRQHandler(void)
     {
         UART_ClearITPendingBit(UART1, UART_ISR_RX);
         receive_data = UART_ReceiveData(UART1);
-        drv_uart_write_byte(UART1, receive_data);
         drv_ringbuf_write((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf, &receive_data, 1);
     }
     else if(RESET != UART_GetITStatus(UART1, UART_ISR_RXOERR))
@@ -179,7 +200,6 @@ void UART2_IRQHandler(void)
     {
         UART_ClearITPendingBit(UART2, UART_ISR_RX);
         receive_data = UART_ReceiveData(UART2);
-        drv_uart_write_byte(UART2, receive_data);
         drv_ringbuf_write((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf, &receive_data, 1);
     }
     else if(RESET != UART_GetITStatus(UART2, UART_ISR_RXOERR))
