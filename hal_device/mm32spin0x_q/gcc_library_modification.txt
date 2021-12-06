@@ -1,0 +1,6 @@
+1. HAL_Lib
+   HAL_Lib/Inc/hal_syscfg.h  修改　#include "hal_EXTI.H"　为　#include "hal_exti.h"
+   HAL_Lib/Src/hal_pwr.c　　修改　PWR_EnterSTOPMode　中　"(stop_entry == PWR_STOPEntry_WFI) ? __WFI() : __WFE();" 
+
+２. Source
+   增加　GCC_StartAsm，　里面包含 ld 链接文件和　.s 启动文件

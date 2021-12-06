@@ -7,18 +7,6 @@
 
 // GPIOＡ.13 GPIOA.14 is used for JTAG, Please use it cautiously!!!
 
-
-void message_process()
-{
-    if(drv_ringbuf_count((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf) != 0)
-    {
-        uint8_t rx_buf[1] = {0};
-        drv_ringbuf_read((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf, 1, rx_buf);
-        if((tx_buf[0] == 'G') || (tx_buf[0] == 'g'))
-        drv_uart_write_byte(UART2, rx_buf[0]);
-    }
-}
-
 int main(void)
 {
     systick_init();
@@ -27,7 +15,7 @@ int main(void)
     drv_uart1_init(115200);
     drv_uart2_init(115200);
 
-    drv_gpio_pin_mode(PB_1, GPIO_MODE_OUTPUT);
+    drv_gpio_pin_mode(PB_5, GPIO_MODE_OUTPUT);
 
     // drv_gpio_pin_mode(PB_7, GPIO_MODE_OUTPUT);
     // drv_gpio_digital_write(PB_7, HIGH);
@@ -52,23 +40,16 @@ int main(void)
     unsigned long current_time = millis();
     while(1)
     {
-        // drv_gpio_digital_write(PB_1, HIGH);
-        // drv_uart_printf(UART1, "PB_1 HIGH %d\n", drv_gpio_analog_read(PB_0));
-        // delay_ms(1000);
-        // drv_gpio_digital_write(PB_1, LOW);
-        // drv_uart_printf(UART1, "PB_1 LOW %d\r\n", drv_gpio_analog_read(PA_5));
-        // delay_ms(1000);
-
-        // count++;
-        // if(count == 100)
-        // {
-        //     log_uart_printf(UART1, "yanminge test v=%d,t=%d,i=%d\r\n", drv_gpio_analog_read(PA_0), drv_gpio_analog_read(PA_5), drv_gpio_analog_read(PB_0));
-        //     count = 0;
-        // }
-        if(millis() - current_time > 10)
+        if(millis() - current_time > 1000)
         {
-            adc_update();
+            static bool led_state = LOW;
+            led_state = !led_state;
+            drv_gpio_digital_write(PB_5, led_state);
+            drv_uart_printf(UART1, "PB_5 led_state: %d, adc read: %d\n", led_state, drv_gpio_analog_read(PA_0));
+            current_time = millis();
         }
+        adc_update();
+        delay_ms(10);
     }
     return 0;
 }

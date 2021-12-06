@@ -1,6 +1,3 @@
-
-
-
 cmake_minimum_required (VERSION 2.6)
 
 project (mm32_project_demo)
@@ -50,21 +47,25 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 message("++++++++++++++Start Build+++++++++++++++++")
 
+if(MCU_TYPE STREQUAL "MM32SPIN0x")
+    set(mcu_path_dir  mm32spin0x_q)
+elseif(MCU_TYPE STREQUAL "MM32F013x")
+    set(mcu_path_dir  mm32f013x)
+else()
+     message(FATAL_ERROR,"please use -DMCU_TYPE=xxxx in command line")
+endif()
+
 # header folder
-include_directories(${PROJECT_SOURCE_DIR}/device_lib/cmsis)
-include_directories(${PROJECT_SOURCE_DIR}/device_lib/mm32spin0x/inc)
-include_directories(${PROJECT_SOURCE_DIR}/device_lib/mm32spin0x/device/include)
+include_directories(${PROJECT_SOURCE_DIR}/hal_device/cmsis)
+include_directories(${PROJECT_SOURCE_DIR}/hal_device/${mcu_path_dir}/HAL_Lib/Inc)
+include_directories(${PROJECT_SOURCE_DIR}/hal_device/${mcu_path_dir}/Include)
 include_directories(${PROJECT_SOURCE_DIR}/src/driver)
-#include_directories(${PROJECT_SOURCE_DIR}/src/uart)
-#include_directories(${PROJECT_SOURCE_DIR}/src/led)
-
-
 
 # source file
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/ USRMAIN)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/driver USRDRIVER)
-aux_source_directory(${PROJECT_SOURCE_DIR}/device_lib/mm32spin0x/src LIBSRC)
-aux_source_directory(${PROJECT_SOURCE_DIR}/device_lib/mm32spin0x/device HALSRC)
+aux_source_directory(${PROJECT_SOURCE_DIR}/hal_device/${mcu_path_dir}/HAL_Lib/Src LIBSRC)
+aux_source_directory(${PROJECT_SOURCE_DIR}/hal_device/${mcu_path_dir}/Source HALSRC)
 
 # the hal source is same for kinds of m32f00 for cortex-m0 machine
 
@@ -78,11 +79,6 @@ set(CPU  "-mcpu=cortex-m0")
 # mcu
 set(MCU  "${CPU} -mthumb")
 set(DEPFLAGS "-MMD -MP")
-if(MCU_TYPE STREQUAL "MM32SPIN0x")
-     add_compile_definitions(MM32SPIN0x_q)
-else()
-     message(FATAL_ERROR,"please use -DMCU_TYPE=xxxx in command line")
-endif()
 
 add_compile_definitions(USE_STDPERIPH_DRIVER)
 set(CMAKE_C_FLAGS "${MCU} -fno-builtin ${OPT}  -Wall -O0 -g3 -std=gnu99 -fdata-sections -ffunction-sections ${DEPFLAGS}")
@@ -100,8 +96,8 @@ set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 set(LIBS "-lc -lm -lnosys" )
 
 
-if(MCU_TYPE STREQUAL "MM32SPIN0x")
-   set(LDSCRIPT "${PROJECT_SOURCE_DIR}/device_lib/mm32spin0x/startup_mm32spin0x_q.ld")
+if(MCU_TYPE)
+   set(LDSCRIPT "${PROJECT_SOURCE_DIR}/hal_device/${mcu_path_dir}/Source/GCC_StartAsm/startup_${mcu_path_dir}.ld")
 else()
       message(FATAL_ERROR,"please select mcu type")
 endif()
@@ -110,10 +106,9 @@ endif()
 set(CMAKE_EXE_LINKER_FLAGS "${MCU} -specs=nano.specs -specs=nosys.specs -T${LDSCRIPT} -Wl,-Map=${PROJECT_BINARY_DIR}/${MY_TARGET}.map,--cref -Wl,--gc-sections")
 
 
-if(MCU_TYPE STREQUAL "MM32SPIN0x")
+if(MCU_TYPE)
      add_executable(${MY_TARGET}.elf ${USRMAIN} ${USRDRIVER} ${LIBSRC} ${HALSRC}
-        ${PROJECT_SOURCE_DIR}/device_lib/mm32spin0x/startup_mm32spin0x_q.s
-        ${PROJECT_SOURCE_DIR}/device_lib/mm32spin0x/device/system_mm32spin0x_q.c)
+        ${PROJECT_SOURCE_DIR}/hal_device/${mcu_path_dir}/Source/GCC_StartAsm/startup_${mcu_path_dir}.s)
 else()
       message(FATAL_ERROR,"please select mcu type")
 endif()
