@@ -59,11 +59,11 @@ endif()
 include_directories(${PROJECT_SOURCE_DIR}/hal_device/cmsis)
 include_directories(${PROJECT_SOURCE_DIR}/hal_device/${mcu_path_dir}/HAL_Lib/Inc)
 include_directories(${PROJECT_SOURCE_DIR}/hal_device/${mcu_path_dir}/Include)
-include_directories(${PROJECT_SOURCE_DIR}/src/driver)
+include_directories(${PROJECT_SOURCE_DIR}/src/driver/${mcu_path_dir}/)
 
 # source file
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/ USRMAIN)
-aux_source_directory(${PROJECT_SOURCE_DIR}/src/driver USRDRIVER)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/driver/${mcu_path_dir} USRDRIVER)
 aux_source_directory(${PROJECT_SOURCE_DIR}/hal_device/${mcu_path_dir}/HAL_Lib/Src LIBSRC)
 aux_source_directory(${PROJECT_SOURCE_DIR}/hal_device/${mcu_path_dir}/Source HALSRC)
 
