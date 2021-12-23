@@ -5,8 +5,6 @@
 #include "drv_ring_buf.h"
 #include "drv_timer.h"
 
-// GPIOＡ.13 GPIOA.14 is used for JTAG, Please use it cautiously!!!
-
 int main(void)
 {
     systick_init();

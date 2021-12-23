@@ -24,7 +24,7 @@ static void adc_single_channel_init(uint32_t channel)
     //ADC prescale factor
     ADC_InitStructure.ADC_PRESCARE = ADC_PCLK2_PRESCARE_16;
     //Set ADC mode to continuous conversion mode
-    ADC_InitStructure.ADC_Mode = ADC_Mode_Scan;   //ADC_Mode_Scan    ADC_Mode_Scan   ADC_Mode_Continue
+    ADC_InitStructure.ADC_Mode = ADC_Mode_Scan;
     //AD data right-justified
     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
     ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_CC1;
@@ -164,11 +164,9 @@ void drv_gpio_pin_mode(gpio_pin_type pin, gpio_mode_type mode)
         {
             case PA_0:
                 adc_single_channel_init(ADC_Channel_0);
-                ADC_ANY_CH_Config(ADC1, 0, ADC_Channel_0);
                 break;
             case PA_1:
                 adc_single_channel_init(ADC_Channel_1);
-                ADC_ANY_CH_Config(ADC1, 1, ADC_Channel_1);
                 break;
             case PA_2:
                 adc_single_channel_init(ADC_Channel_2);
@@ -178,11 +176,9 @@ void drv_gpio_pin_mode(gpio_pin_type pin, gpio_mode_type mode)
                 break;
             case PA_4:
                 adc_single_channel_init(ADC_Channel_4);
-                ADC_ANY_CH_Config(ADC1, 2, ADC_Channel_2);
                 break;
             case PA_5:
                 adc_single_channel_init(ADC_Channel_5);
-                ADC_ANY_CH_Config(ADC1, 3, ADC_Channel_3);
                 break;
             case PA_6:
                 adc_single_channel_init(ADC_Channel_6);
@@ -403,7 +399,6 @@ void adc_update(void)
           for(channel = 0; channel < ADC_SCANNUM; channel++)
           {
                varADCavarage[averagenumber][channel] = ADCValue[channel];
-               drv_uart_printf(UART1, "ADCValue[%d] = %d\n", channel, ADCValue[channel]);
           }
           ADC_SoftwareStartConvCmd(ADC1, ENABLE);
           averagenumber++;
@@ -434,6 +429,12 @@ int drv_gpio_analog_read(gpio_pin_type pin)
              break;
         case PA_1:
              analog_val = ADCFilterValue[1];
+             break;
+        case PA_4:
+             analog_val = ADCFilterValue[2];
+             break;
+        case PA_5:
+             analog_val = ADCFilterValue[3];
              break;
         default:
              return -1;
